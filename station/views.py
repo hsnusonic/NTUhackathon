@@ -42,12 +42,16 @@ def index(request):
 def detail(request, status_id):
     module_dir = os.path.dirname(__file__)
     file_path = os.path.join(module_dir, 'history.json')
+    content = {}
     with open(file_path, 'r') as f:
         data = json.load(f)
         cntu = data[status_id]["cntu"]
         ph   = data[status_id]["ph"]
         cl   = data[status_id]["cl"]
-    return HttpResponse("Status number %s" % status_id)
+        content["cntu"] = cntu
+        content["ph"] = ph
+        content["cl"] = cl
+    return render(request, 'station/details.html', content) 
 
 def update(request):
     update_all()
