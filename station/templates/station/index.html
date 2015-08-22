@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h2> Status List </h2>
+  <table class="table table-hover">
+    <thead>
+      <th>Name</th>
+      <th>cntu</th>
+      <th>CL</th>
+      <th>PH</th>
+    </thead>
+    {% if status_list %}
+    <tbody>
+      <tr>
+      {% for status in status_list %}
+        <td><a href="/station/{{ status.id }}/">{{ status.name }}</a></td>
+        <td>{{ status.qua_cntu }}</td>
+        <td>{{ status.qua_cl }}</td>
+        <td>{{ status.qua_ph }}</td>
+      {% endfor %}
+      </tr>
+    </tbody>
+    {% else %}
+      <p> No status available </p>
+    {% endif %}
+  </table>
+</div>
+{% endblock %}
