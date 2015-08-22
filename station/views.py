@@ -7,6 +7,8 @@ import urllib, urllib2, json
 import datetime
 import os
 
+FIRST_START = True
+
 
 def update_all():
     url = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=190796c8-7c56-42e0-8068-39242b8ec927 "
@@ -24,8 +26,8 @@ def update_all():
         except:
             s = Status(index=index)
 
-        s.update_date = station['update_date'].encode('utf-8')
-        s.update_time = station['update_time'].encode('utf-8')
+        s.update_date = str(station['update_date'].encode('utf-8'))
+        s.update_time = str(station['update_time'].encode('utf-8'))
         s.qua_id    = str(station["qua_id"].encode('utf-8'))
         s.name      = str(station["code_name"].encode('utf-8'))
         s.longitude = float(station["longitude"].encode('utf-8'))
@@ -91,7 +93,10 @@ def update_all():
 
 # Create your views here.
 def index(request):
-    update_all()
+    global FIRST_START
+    if FIRST_START:
+        update_all()
+        FIRST_START = False
     status_list = Status.objects.all()
     context = {'status_list': status_list}
     return render(request, 'station/index.html', context)
@@ -113,5 +118,5 @@ def detail(request, status_id):
     return render(request, 'station/details.html', content) 
 
 def update(request):
-    #update_all()
+    update_all()
     return redirect('index')

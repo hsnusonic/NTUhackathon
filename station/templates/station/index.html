@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
+  <div id="map"></div>
+</div>
+<div class="container">
     <h2> Water Station List  <a href="/station/update/"><button type="button" class="btn btn-warning">Update</button></a></h2>
   <table class="table table-hover">
     <thead>
       <th>Name</th>
+      <th>Update Date</th>
+      <th>Update Time</th>
       <th>cntu</th>
       <th>CL</th>
       <th>PH</th>
@@ -15,6 +20,8 @@
       {% for status in status_list %}
       <tr>
         <td><a href="/station/{{ status.id }}/">{{ status.name }}</a></td>
+        <td>{{ status.update_date }}</td>
+        <td>{{ status.update_time }}</td>
         <td>{{ status.qua_cntu }}</td>
         <td>{{ status.qua_cl }}</td>
         <td>{{ status.qua_ph }}</td>
@@ -31,4 +38,57 @@
     {% endif %}
   </table>
 </div>
+  <script>
+    function initialize() {
+      var myLatLng = {lat: 25.0465, lng: 121.5385};
+      var mapCanvas = document.getElementById('map');
+      var mapOptions = {
+        center: myLatLng,
+        zoom: 12,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+      }
+      var map = new google.maps.Map(mapCanvas, mapOptions);
+    
+      var redImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569",
+        new google.maps.Size(21, 34),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(10, 34)
+      );
+      var greenImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|00CC99",
+        new google.maps.Size(21, 34),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(10, 34)
+      );
+
+      var index = 0;
+      {% for status in status_list %}
+      var marker = new google.maps.Marker({
+        position: {lat: {{ status.latitude }}, lng: {{ status.longitude }}},
+        map: map,
+        {% if status.normal %}
+          icon: greenImage,
+        {% else %}
+          icon: redImage,
+        {% endif %}
+      });
+      var contentString = '<div id="content">' + 
+          '<div id="siteNotice">' +
+          '</div>' +
+          '<h4 id="firstHeading" class="firstHeading">{{ status.name }}</h1>' +
+          '<div id="bodyContent">' +
+          '<p><b>Cntu</b>, </b>{{ status.qua_cntu }}</p>' +
+          '<p><b>Cl</b>, </b>{{ status.qua_cl }}</p>' +
+          '<p><b>Ph</b>, </b>{{ status.qua_ph }}</p>' +
+          '</div>' +
+          '</div>';
+      var infowindow = new google.maps.InfoWindow({ 
+        content: contentString
+      });
+      marker.addListener('click', function() {
+        infowindow.open(map, marker); 
+      });
+      {% endfor %}
+    }
+    google.maps.event.addDomListener(window, 'load', initialize);
+  </script>
 {% endblock %}
