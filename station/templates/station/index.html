@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-  <h2> Status List </h2>
+    <h2> Status List  <a href="/station/update/"><button type="button" class="btn btn-warning">Update</button></a></h2>
   <table class="table table-hover">
     <thead>
       <th>Name</th>
@@ -11,14 +11,14 @@
     </thead>
     {% if status_list %}
     <tbody>
-      <tr>
       {% for status in status_list %}
+      <tr>
         <td><a href="/station/{{ status.id }}/">{{ status.name }}</a></td>
         <td>{{ status.qua_cntu }}</td>
         <td>{{ status.qua_cl }}</td>
         <td>{{ status.qua_ph }}</td>
-      {% endfor %}
       </tr>
+      {% endfor %}
     </tbody>
     {% else %}
       <p> No status available </p>
