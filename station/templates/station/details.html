@@ -1,10 +1,392 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    {{ ph }}
-    <br></br>
-    {{ cl }}
-    <br></ br>
-    {{ cntu }} 
+<style>
+  body{
+    font-family:sans-serif;
+  }
+  .axis path, line{
+    stroke:#E8E8E8;
+  }
+  .axis text {
+ 	  fill: dimgray;
+ 	  font: 12px sans-serif;
+  }
+  .axis1 path, line{
+    stroke:lightgrey;
+  }
+  .axis1 text {
+ 	  fill: dimgrey;
+ 	  font: 12px sans-serif;
+  }
+  .lineChart path{
+    stroke-width:3px;
+  }
+  .line {
+    stroke:#FFD700;
+  }
+  .line2 {
+    stroke:#E55451;
+  }
+  .line3 {
+    stroke:#E8E8E8;
+  }
+  path {
+   	stroke: steelblue;
+   	stroke-width: 2;
+   	fill: none;
+  }
+  path.area {
+   	stroke: none;
+   	stroke-width: 2;
+   	fill: #F1F1F2;
+  }
+  .container {
+ 	  float: left;
+  }
+	.light circle{
+		stroke:dimgrey;
+		stroke-width: 5px;
+	}
+  .focus circle {
+		fill: none;
+		stroke: steelblue;
+	}
+	.overlay {
+		fill: none;
+		pointer-events: all;
+	}
+
+</style>
+<div style="width: 1000px; margin: 0px auto">
+<div class="container" id="sign" style="width: 250px"></div>
+<div class="container" id="chart" style="width: 700px"></div>
 </div>
+<script>
+  "use strict";
+  var data_ph = {{ ph }};
+  var data_cl = {{ cl }};
+  var data_cntu = {{ cntu }};
+
+  /* transfer data format */
+  var DATA = [];
+  for (var i = 0; i < data_ph.length; i++) {
+    DATA.push({time: i, ph: data_ph[i], cl: data_cl[i], cntu: data_cntu[i]})
+  }
+
+  var margin = {top: 10, right: 0, bottom: 30, left: 60};
+  var width1 = 250;
+  var width2 = 680;
+  var height = 150;
+
+  var time_scale = d3.scale.linear()
+    .range([0, width2-margin.left-margin.right])
+    .domain([0, DATA.length-1]);
+  var ph_scale = d3.scale.linear()
+    .range([height-margin.top-margin.bottom, 0])
+    .domain([6, 8.5]);
+  var cl_scale = d3.scale.linear()
+    .range([height-margin.top-margin.bottom, 0])
+    .domain([0, 1]);
+  var cntu_scale = d3.scale.linear()
+    .range([height-margin.top-margin.bottom, 0])
+    .domain([0, 2]);
+
+  var time_axis = d3.svg.axis()
+    .scale(time_scale)
+    .orient('bottom')
+    .tickSize(-height)
+    .tickSubdivide(true);
+  var ph_axis = d3.svg.axis()
+    .scale(ph_scale)
+    .orient("left")
+    .ticks(6);
+  var cl_axis = d3.svg.axis()
+    .scale(cl_scale)
+    .orient("left")
+    .ticks(6);
+  var cntu_axis = d3.svg.axis()
+    .scale(cntu_scale)
+    .orient("left")
+    .ticks(6);
+
+  var line1 = d3.svg.line()
+    .x(function(d){return time_scale(d.time);})
+    .y(function(d){return ph_scale(d.ph);});
+  var line2 = d3.svg.line()
+    .x(function(d){return time_scale(d.time);})
+    .y(function(d){return cl_scale(d.cl);});
+  var line3 = d3.svg.line()
+    .x(function(d){return time_scale(d.time);})
+    .y(function(d){return cntu_scale(d.cntu);});
+
+  var time_height = 30;
+
+  // chart 1 ph vs time
+  var svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width2 + 20)
+    .attr("height", 4 * (height + 30));
+
+  var g1 = svg.append("g")
+    .attr("transform", "translate(" + (margin.left-10) + "," + (margin.top+time_height) + ")");
+
+  g1.append("g")
+    .attr("class", "y axis")
+    .call(ph_axis);
+
+  g1.append("g")
+    .attr("class", "x axis")
+    .attr("id", "chart1")
+    .attr("transform", "translate(0," + (height-20) + ")")
+    .call(time_axis)
+    .selectAll("g")
+    .select("text")
+    .attr("style", "opacity: 0");
+
+  g1.append("path")
+    .attr("class", "linepath")
+    .attr("d", line1(DATA));
+
+  // chart 2 cl vs time
+  var g2 = svg.append("g")
+    .attr("transform", "translate(" + (margin.left-10) + "," + (margin.top + (height + 30) + time_height) + ")");
+
+  g2.append("g")
+    .attr("class", "y axis")
+    .call(cl_axis);
+
+  g2.append("g")
+    .attr("class", "x axis")
+    .attr("id", "chart2")
+    .attr("transform", "translate(0," + (height-20) + ")")
+    .call(time_axis)
+    .selectAll("g")
+    .select("text")
+    .attr("style", "opacity: 0");
+
+  g2.append("path")
+    .attr("class", "linepath")
+    .attr("d", line2(DATA));
+
+  // chart 3 cntu vs time
+  var g3 = svg.append("g")
+    .append("g")
+    .attr("transform", "translate(" + (margin.left-10) + "," + (margin.top + 2*(height + 30) + time_height) + ")");
+
+  g3.append("g")
+    .attr("class", "x axis")
+    .attr("id", "chart3")
+    .attr("transform", "translate(0," + (height-20) + ")")
+    .call(time_axis);
+
+  g3.append("g")
+    .attr("class", "y axis")
+    .call(cntu_axis);
+
+  g3.append("path")
+    .attr("class", "linepath")
+    .attr("d", line3(DATA));
+
+  // sign indicator
+
+  var sign = d3.select("#sign")
+		.append("svg")
+		.attr("width", width1-30)
+		.attr("height", 3 * (height + 30));
+
+  var light1 = sign.append("g")
+    .attr("transform", "translate(" + (margin.left-40) + "," + (margin.top + time_height) + ")");
+
+  var r1 = light1.append("g")
+    .attr("transform", "translate(" + (margin.left - 10) + "," + margin.top + ")");
+
+  r1.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", width1-110)
+    .attr("height", height - 50)
+    .attr("rx", 20)
+    .attr("ry", 20)
+    .attr("stroke", "#F8F8F8")
+    .attr("stroke-width", "5px")
+    .attr("fill", "#F8F8F8");
+
+  r1.append("text")
+    .attr("x", 53)
+    .attr("y", 43)
+    .attr("fill", "dimgray")
+    .attr("class", "light")
+    .attr("font-size", "25px")
+    .text("PH");
+
+  var data1 = r1.append("text")
+    .attr("x", 50)
+    .attr("y", 68)
+    .attr("dy", 8)
+    .attr("fill", "#686868")
+    .attr("font-size", "18px")
+    .attr("text-anchor", "midddle");
+
+  var light2 = sign.append("g")
+    .attr("transform", "translate(" + (margin.left-40) + "," + (margin.top + time_height) + ")");
+
+  var r2 = light2.append("g")
+    .attr("transform", "translate(" + (margin.left - 10) + "," + margin.top + ")");
+
+  r2.append("rect")
+    .attr("x", 0)
+    .attr("y", 180)
+    .attr("width", width1-110)
+    .attr("height", height - 50)
+    .attr("rx", 20)
+    .attr("ry", 20)
+    .attr("stroke", "#F8F8F8")
+    .attr("stroke-width", "5px")
+    .attr("fill", "#F8F8F8");
+
+  r2.append("text")
+    .attr("x", 57)
+    .attr("y", 220)
+    .attr("fill", "dimgray")
+    .attr("class", "light")
+    .attr("font-size", "25px")
+    .text("Cl")
+
+  var data2 = r2.append("text")
+    .attr("x", 30)
+    .attr("y", 247)
+    .attr("dy", 8)
+    .attr("fill", "#686868")
+    .attr("font-size", "18px")
+    .attr("text-anchor", "midddle");
+
+  var light3 = sign.append("g")
+    .attr("transform", "translate(" + (margin.left-40) + "," + (margin.top + time_height) + ")");
+
+  var r3 = light3.append("g")
+    .attr("transform", "translate(" + (margin.left - 10) + "," + margin.top + ")");
+
+  r3.append("rect")
+    .attr("x", 0)
+    .attr("y", 360)
+    .attr("width", width1-110)
+    .attr("height", height - 50)
+    .attr("rx", 20)
+    .attr("ry", 20)
+    .attr("stroke", "#F8F8F8")
+    .attr("stroke-width", "5px")
+    .attr("fill", "#F8F8F8");
+
+  r3.append("text")
+    .attr("x", 42)
+    .attr("y", 404)
+    .attr("fill", "dimgray")
+    .attr("class", "light")
+    .attr("font-size", "25px")
+    .text("cntu")
+
+  var data3 = r3.append("text")
+    .attr("x", 32)
+    .attr("y", 430)
+    .attr("dy", 8)
+    .attr("fill", "#686868")
+    .attr("font-size", "18px")
+    .attr("text-anchor", "midddle");
+
+    //mousemove
+
+    var bisectTime = d3.bisector(function(d) { return d.time; }).left;
+    var	formatValue = d3.format(",.2f");
+
+    var focus1 = g1
+      .append("circle")
+      .attr("r", 0);
+
+    var number1 = focus1
+      .append("text")
+      .attr("stroke","MidnightBlue")
+      .attr("font-size", "10px");
+
+    var focus2 = g2
+      .append("circle")
+      .attr("r", 0);
+
+    var focus3 = g3
+      .append("circle")
+      .attr("r", 0);
+
+    var overlay = svg.append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    overlay.append("rect")
+      .attr("class", "overlay")
+      .attr("width", width2)
+      .attr("height", 3*height + 2*margin.bottom)
+      .on("mouseover", mouseover)
+      .on("mouseout", mouseout)
+      .on("mousemove", mousemove);
+
+    function mouseover() {
+      focus1.style("display", null);
+      focus2.style("display", null);
+      focus3.style("display", null);
+
+      light1.attr("fill", "#F8F8F8");
+      data1.text(" ");
+
+      light2.attr("fill", "#F8F8F8");
+      data2.text(" ");
+
+      light3.attr("fill", "#F8F8F8");
+      data3.text(" ");
+    }
+
+    function mouseout() {
+      focus1.style("display", "none");
+      focus2.style("display", "none");
+      focus3.style("display", "none");
+
+      light1.attr("fill", "#F8F8F8");
+      data1.text(" ");
+
+      light2.attr("fill", "#F8F8F8");
+      data2.text(" ");
+
+      light3.attr("fill", "#F8F8F8");
+      data3.text(" ");
+    }
+
+    function mousemove() {
+      var x0 = time_scale.invert(d3.mouse(this)[0]),
+        i = bisectTime(DATA, x0, 1);
+
+      if (i === 0) {
+        var d = DATA[i];
+      } else if (i < DATA.length) {
+        var d0 = DATA[i - 1],
+        d1 = DATA[i],
+        d = x0 - d0.Time > d1.Time - x0 ? d1 : d0;
+      } else {
+        var d = DATA[i-1];
+      }
+
+      focus1.attr("transform", "translate(" + time_scale(d.time) + "," + ph_scale(d.ph) + ")")
+          .attr("r", 5).attr("fill", "MidnightBlue");
+      focus1.select("text").text(formatValue(d.ph));
+
+      focus2.attr("transform", "translate(" + time_scale(d.time) + "," + cl_scale(d.cl) + ")")
+         .attr("r", 5).attr("fill", "MidnightBlue");
+      focus2.select("text").text(formatValue(d.cl));
+
+      focus3.attr("transform", "translate(" + time_scale(d.time) + "," + cntu_scale(d.cntu) + ")")
+         .attr("r", 5).attr("fill", "MidnightBlue");
+      focus3.select("text").text(formatValue(d.cntu));
+
+      data1.text(formatValue(d.ph));
+
+      data2.text(formatValue(d.cl) + " mg/L");
+
+      data3.text(formatValue(d.cntu) + " NTU");
+    }
+</script>
 {% endblock %}
