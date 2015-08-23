@@ -48,7 +48,7 @@
         mapTypeId: google.maps.MapTypeId.ROADMAP
       }
       var map = new google.maps.Map(mapCanvas, mapOptions);
-    
+
       var redImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569",
         new google.maps.Size(21, 34),
         new google.maps.Point(0, 0),
@@ -61,6 +61,7 @@
       );
 
       var index = 0;
+      var contents = []
       {% for status in status_list %}
       var marker = new google.maps.Marker({
         position: {lat: {{ status.latitude }}, lng: {{ status.longitude }}},
@@ -71,22 +72,24 @@
           icon: redImage,
         {% endif %}
       });
-      var contentString = '<div id="content">' + 
+      contents.push('<div id="content">' +
           '<div id="siteNotice">' +
           '</div>' +
           '<h4 id="firstHeading" class="firstHeading">{{ status.name }}</h1>' +
           '<div id="bodyContent">' +
-          '<p><b>Cntu</b>, </b>{{ status.qua_cntu }}</p>' +
-          '<p><b>Cl</b>, </b>{{ status.qua_cl }}</p>' +
-          '<p><b>Ph</b>, </b>{{ status.qua_ph }}</p>' +
+          '<p><b>Cntu</b>: </b>{{ status.qua_cntu }}</p>' +
+          '<p><b>Cl</b>: </b>{{ status.qua_cl }}</p>' +
+          '<p><b>Ph</b>: </b>{{ status.qua_ph }}</p>' +
           '</div>' +
-          '</div>';
-      var infowindow = new google.maps.InfoWindow({ 
-        content: contentString
-      });
-      marker.addListener('click', function() {
-        infowindow.open(map, marker); 
-      });
+          '</div>');
+      var infowindow = new google.maps.InfoWindow();
+      google.maps.event.addListener(marker, 'click', (function(marker, index) {
+                    return function() {
+                      infowindow.setContent(contents[index]);
+                      infowindow.open(map, marker);
+                    }
+                  })(marker, index));
+      index++;
       {% endfor %}
     }
     google.maps.event.addDomListener(window, 'load', initialize);
