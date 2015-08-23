@@ -295,7 +295,7 @@
 
     //mousemove
 
-    var bisectTime = d3.bisector(function(d) { return d.time; }).left;
+    var bisectTime = d3.bisector(function(d) { return d.time; }).right;
     var	formatValue = d3.format(",.2f");
 
     var focus1 = g1
@@ -360,11 +360,9 @@
       var x0 = time_scale.invert(d3.mouse(this)[0]),
         i = bisectTime(DATA, x0, 1);
 
-      if (i === 0) {
-        var d = DATA[i];
-      } else if (i < DATA.length) {
-        var d0 = DATA[i - 1],
-        d1 = DATA[i],
+      if (i < DATA.length - 1) {
+        var d0 = DATA[i],
+        d1 = DATA[i+1],
         d = x0 - d0.Time > d1.Time - x0 ? d1 : d0;
       } else {
         var d = DATA[i-1];
